@@ -8,6 +8,8 @@ module Text.PDF.Info
     ,PDFSize(..)
     ,PDFInfoError(..)
     -- * Internals
+    ,ParsePDFInfo
+    ,runParse
     ,parse
     ,parseSize
     ,parseDate
