@@ -103,9 +103,9 @@ parse out = runParse $
 
 -- | Parse a page size. This is loosely defined.
 parseSize :: String -> ParsePDFInfo PDFSize
-parseSize s = 
+parseSize s =
   case words s of
-    ((readRight -> Right x):"x":(readRight -> Right y):_) -> 
+    ((readRight -> Right x):"x":(readRight -> Right y):_) ->
         return $ PDFSize x y
     _ -> throwError $ ParseError $ "Unable to read size: " ++ show s
 
