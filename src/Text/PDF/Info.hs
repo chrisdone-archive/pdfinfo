@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, MultiParamTypeClasses, ViewPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS -Wall #-}
-module Text.PDF.Info 
+module Text.PDF.Info
     (-- * Reading PDF info
      pdfInfo
     ,PDFInfo(..)
@@ -43,7 +43,7 @@ data PDFInfo = PDFInfo {
   } deriving Show
 
 -- | Possible things that can go wrong while reading the info.
-data PDFInfoError = 
+data PDFInfoError =
     ParseError String        -- ^ Couldn't parse a property value.
   | ProcessError IOException -- ^ Error to do with the pdfinfo process.
   | NoMessage                -- ^ No message given.
@@ -111,15 +111,15 @@ parseSize s =
 
 -- | Parse a date according to pdfinfo's format.
 parseDate :: String -> ParsePDFInfo UTCTime
-parseDate s = 
+parseDate s =
   case parseTime defaultTimeLocale "%a %b %e %H:%M:%S %Y" s of
     Just ok -> return ok
     Nothing -> throwError $ ParseError $ "Unable to parse date: " ++ show s
 
 -- | Read a value, maybe, allow misc trailing data.
 readRight :: (MonadError PDFInfoError m,Read a) => String -> m a
-readRight s = 
-  case reads s of 
+readRight s =
+  case reads s of
     [(v,_)] -> return v
     _ -> throwError $ ParseError $ "Couldn't read value: " ++ show s
 
