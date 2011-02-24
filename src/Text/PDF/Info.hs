@@ -109,7 +109,7 @@ parseSize s =
 -- | Parse a date according to pdfinfo's format.
 parseDate :: String -> ParsePDFInfo UTCTime
 parseDate s =
-  case parseTime defaultTimeLocale "%a %b %d %H:%M:%S %Y" s of
+  case parseTime defaultTimeLocale "%a %b %e %H:%M:%S %Y" s of
     Just ok -> return ok
     Nothing -> throwError $ ParseError $ "Unable to parse date: " ++ show s
 
