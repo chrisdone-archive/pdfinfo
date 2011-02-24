@@ -28,7 +28,9 @@ import Control.Exception
 
 -- | A type representing the output from the pdfinfo command.
 data PDFInfo = PDFInfo {
-    pdfInfoAuthor       :: Maybe String  -- ^ Author: E.g. Chris Done
+    pdfInfoTitle        :: Maybe String  -- ^ Title
+  , pdfInfoSubject      :: Maybe String  -- ^ Subject
+  , pdfInfoAuthor       :: Maybe String  -- ^ Author: E.g. Chris Done
   , pdfInfoCreator      :: Maybe String  -- ^ Creator: E.g. Microsoft® Office Word 2007
   , pdfInfoProducer     :: Maybe String  -- ^ Producer: E.g. Microsoft® Office Word 2007
   , pdfInfoCreationDate :: Maybe UTCTime -- ^ Creation Date
@@ -69,7 +71,9 @@ pdfInfo path = liftIO $ loadInfo `catch` ioErrorHandler where
 -- | Parse PDFInfo's output.
 parse :: String -> Either PDFInfoError PDFInfo
 parse out = runParse $
-  PDFInfo <$> string "Author"
+  PDFInfo <$> string "Title"
+          <*> string "Subject"
+          <*> string "Author"
           <*> string "Creator"
           <*> string "Producer"
           <*> date "CreationDate"
