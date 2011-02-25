@@ -1,5 +1,5 @@
 Name:                pdfinfo
-Version:             0.1.1
+Version:             0.1.2
 Synopsis:            Wrapper around the pdfinfo command.
 Description:         Just a wrapper around the pdfinfo command. See man pdfinfo.
 License:             BSD3
