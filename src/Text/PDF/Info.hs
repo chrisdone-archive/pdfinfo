@@ -31,8 +31,8 @@ data PDFInfo = PDFInfo {
     pdfInfoTitle        :: Maybe String  -- ^ Title
   , pdfInfoSubject      :: Maybe String  -- ^ Subject
   , pdfInfoAuthor       :: Maybe String  -- ^ Author: E.g. Chris Done
-  , pdfInfoCreator      :: Maybe String  -- ^ Creator: E.g. Microsoft® Office Word 2007
-  , pdfInfoProducer     :: Maybe String  -- ^ Producer: E.g. Microsoft® Office Word 2007
+  , pdfInfoCreator      :: Maybe String  -- ^ Creator: E.g. Microsoft Office Word 2007
+  , pdfInfoProducer     :: Maybe String  -- ^ Producer: E.g. Microsoft Office Word 2007
   , pdfInfoCreationDate :: Maybe UTCTime -- ^ Creation Date
   , pdfInfoModDate      :: Maybe UTCTime -- ^ Modification Date
   , pdfInfoTagged       :: Maybe Bool    -- ^ Tagged?
