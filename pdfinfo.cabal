@@ -14,7 +14,8 @@ Library
   Exposed-modules:   Text.PDF.Info
   Hs-source-dirs:    src/
   Build-depends:     base >= 4 && < 5,
-                     old-locale >= 1.0.0.0 && <= 1.0.0.4,
+                     old-locale >= 1.0.0.0 && <= 1.0.0.5,
                      time >= 1.1 && <= 1.4.0.1,
-                     process >= 1.0 && <= 1.1.0.1,
-                     mtl >= 1.1 && <= 2.1.1
+                     process >= 1.0 && <= 1.1.0.2,
+                     -- mtl-2.1 contains a severe bug
+                     mtl >= 1.1 && < 2.1 || >= 2.1.1 && < 2.2
