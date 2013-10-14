@@ -65,7 +65,7 @@ instance Applicative ParsePDFInfo where (<*>) = ap; pure = return
 -- running the process.
 pdfInfo :: MonadIO m => FilePath -> m (Either PDFInfoError PDFInfo)
 pdfInfo path = liftIO $ loadInfo `catch` ioErrorHandler where
-  loadInfo = parse <$> readProcess "pdfinfo" [path] ""
+  loadInfo = parse <$> readProcess "pdfinfo" ["-enc", "UTF-8", path] ""
   ioErrorHandler = return . Left . ProcessError
 
 -- | Parse PDFInfo's output.
