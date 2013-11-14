@@ -16,7 +16,7 @@ module Text.PDF.Info
     ,readRight)
     where
 
-import Prelude hiding (catch)
+import Prelude
 import Control.Monad.Error
 import System.Process
 import Control.Applicative
@@ -24,7 +24,7 @@ import Control.Arrow
 import Data.Char
 import Data.Time
 import System.Locale
-import Control.Exception
+import Control.Exception as E
 
 -- | A type representing the output from the pdfinfo command.
 data PDFInfo = PDFInfo {
@@ -64,7 +64,7 @@ instance Applicative ParsePDFInfo where (<*>) = ap; pure = return
 -- | Run pdfinfo on the given file. Handles IO exceptions to do with
 -- running the process.
 pdfInfo :: MonadIO m => FilePath -> m (Either PDFInfoError PDFInfo)
-pdfInfo path = liftIO $ loadInfo `catch` ioErrorHandler where
+pdfInfo path = liftIO $ loadInfo `E.catch` ioErrorHandler where
   loadInfo = parse <$> readProcess "pdfinfo" [path] ""
   ioErrorHandler = return . Left . ProcessError
 
