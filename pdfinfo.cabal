@@ -9,7 +9,7 @@ maintainer:          chrisdone@gmail.com
 copyright:           2010 Chris Done
 category:            Text
 build-type:          Simple
-cabal-version:       >=1.2
+cabal-version:       >=1.8
 library
   ghc-options:        -O2 -Wall
   exposed-modules:   Text.PDF.Info
