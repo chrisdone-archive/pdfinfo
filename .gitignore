@@ -2,4 +2,6 @@
 *.hi
 dist/
 cabal-dev/
+cabal.sandbox.config
+.cabal-sandbox
 TAGS
