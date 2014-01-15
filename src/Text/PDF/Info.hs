@@ -9,6 +9,7 @@ module Text.PDF.Info
      pdfInfo
     ,PDFInfo(..)
     ,PDFSize(..)
+    ,PDFEncryptionInfo(..)
     ,PDFInfoError(..)
     -- * Internals
     ,ParsePDFInfo
@@ -16,6 +17,7 @@ module Text.PDF.Info
     ,parse
     ,parseSize
     ,parseDate
+    ,parseEncrypted
     ,readRight)
     where
 
@@ -24,6 +26,7 @@ import           Control.Arrow
 import           Control.Exception as E
 import           Control.Monad.Error
 
+import           Data.Char (isSpace)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time
@@ -43,7 +46,7 @@ data PDFInfo = PDFInfo {
   , pdfInfoModDate      :: !(Maybe UTCTime) -- ^ Modification Date
   , pdfInfoTagged       :: !(Maybe Bool)    -- ^ Tagged?
   , pdfInfoPages        :: !(Maybe Integer) -- ^ Pages: E.g. 238
-  , pdfInfoEncrypted    :: !(Maybe Bool)    -- ^ Encrypted?
+  , pdfInfoEncrypted    :: !(Maybe PDFEncryptionInfo) -- ^ Encryption information
   , pdfInfoPageSize     :: !(Maybe PDFSize) -- ^ Page: E.g. 595.32 x 841.92 pts (A4)
   , pdfInfoFileSize     :: !(Maybe Integer) -- ^ File: E.g. 4061737 bytes
   , pdfInfoOptimized    :: !(Maybe Bool)    -- ^ Optimized?
@@ -61,6 +64,20 @@ data PDFInfoError
 
 -- | Size of the PDF in pts.
 data PDFSize = PDFSize { pdfSizeW :: !Float, pdfSizeH :: !Float }
+  deriving (Eq,Show)
+
+-- | Encryption and restricted permissions
+data PDFEncryptionInfo
+  -- | Not encrypted
+  = PDFNoEncryption
+  -- | Encrypted with possible permission restrictions
+  | PDFEncryption {
+      pdfCanPrint            :: !(Maybe Bool) -- ^ Can the file be printed?
+    , pdfCanCopy             :: !(Maybe Bool) -- ^ Can the file be copied?
+    , pdfCanChange           :: !(Maybe Bool) -- ^ Can the file be changed?
+    , pdfCanAddNotes         :: !(Maybe Bool) -- ^ Can notes be added?
+    , pdfEncryptionAlgorithm :: !(Maybe Text) -- ^ Encryption algorithm: e.g. unknown, RC4, AES, AES-256
+    }
   deriving (Eq,Show)
 
 instance Error PDFInfoError where noMsg = NoMessage; strMsg = SomeError
@@ -81,36 +98,49 @@ pdfInfo path = liftIO $ loadInfo `E.catch` ioErrorHandler where
 -- | Parse PDFInfo's output.
 parse :: Text -> Either PDFInfoError PDFInfo
 parse out = runParse $
-  PDFInfo <$> string "Title"
-          <*> string "Subject"
-          <*> string "Author"
-          <*> string "Creator"
-          <*> string "Producer"
+  PDFInfo <$> string props "Title"
+          <*> string props "Subject"
+          <*> string props "Author"
+          <*> string props "Creator"
+          <*> string props "Producer"
           <*> date "CreationDate"
           <*> date "ModDate"
-          <*> bool "Tagged"
+          <*> bool props "Tagged"
           <*> integer "Pages"
-          <*> bool "Encrypted"
+          <*> encrypted "Encrypted"
           <*> size "Page size"
           <*> integer "File size"
-          <*> bool "Optimized"
+          <*> bool props "Optimized"
           <*> floating "PDF version"
-    where string = get id
-          date = get (>>= parseDate)
-          size = get (>>= parseSize)
-          bool = get $ fmap $ \yes -> yes == "yes"
+    where date = get parseDate
+          size = get parseSize
+          encrypted = get parseEncrypted
           floating = readIt
           integer = readIt
           readIt :: Read a => Text -> ParsePDFInfo (Maybe a)
-          readIt = get (>>= readRight)
-          properties = map split . T.lines $ out
-          get f name =
-            case lookup name properties of
-              Just ok -> catchError (Just <$> (f $ return $ T.strip ok))
-                                    (\_ -> return Nothing)
-              Nothing -> return Nothing
+          readIt = get readRight
+          props = map split . T.lines $ out
+          get = withProps props
 
-          split = second (T.drop 2) . T.span (/=':')
+type Props = [(Text,Text)]
+
+-- | Look up a name in a finite map of "properties" and apply a (parsing)
+-- function.
+withProps :: Props -> (Text -> ParsePDFInfo a) -> Text -> ParsePDFInfo (Maybe a)
+withProps properties f name =
+  case lookup name properties of
+    Just ok -> catchError (Just <$> (f $ T.strip ok))
+                          (\_ -> return Nothing)
+    Nothing -> return Nothing
+
+split :: Text -> (Text, Text)
+split = second (T.drop 1) . T.span (/=':')
+
+string :: Props -> Text -> ParsePDFInfo (Maybe Text)
+string props = withProps props return
+
+bool :: Props -> Text -> ParsePDFInfo (Maybe Bool)
+bool props = withProps props $ \yes -> return $ yes == "yes"
 
 -- | Parse a page size. This is loosely defined.
 parseSize :: Text -> ParsePDFInfo PDFSize
@@ -126,6 +156,21 @@ parseDate s =
   case parseTime defaultTimeLocale "%a %b %e %H:%M:%S %Y" (T.unpack s) of
     Just ok -> return ok
     Nothing -> throwError $ ParseError $ "Unable to parse date: " ++ show s
+
+-- | Parse encryption information according to pdfinfo's format.
+parseEncrypted :: Text -> ParsePDFInfo PDFEncryptionInfo
+parseEncrypted s =
+  case T.break isSpace s of
+    ("yes",rest) ->
+      PDFEncryption <$> bool props "print"
+                    <*> bool props "copy"
+                    <*> bool props "change"
+                    <*> bool props "addNotes"
+                    <*> string props "algorithm"
+      where
+        props = map split $ T.words $ T.filter (flip notElem ['(',')']) rest
+    ("no",_) -> return PDFNoEncryption
+    _ -> throwError $ ParseError $ "Unable to parse encryption: " ++ show s
 
 -- | Read a value, maybe, allow misc trailing data.
 readRight :: (MonadError PDFInfoError m,Read a) => Text -> m a
