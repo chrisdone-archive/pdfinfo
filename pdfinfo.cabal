@@ -1,5 +1,5 @@
 name:                pdfinfo
-version:             1.5.1
+version:             1.5.2
 synopsis:            Wrapper around the pdfinfo command.
 description:         Just a wrapper around the pdfinfo command (for collecting PDF file info). See man pdfinfo.
 license:             BSD3
@@ -26,4 +26,4 @@ library
                      process-extras,
                      text,
                      -- mtl-2.1 contains a severe bug
-                     mtl >= 1.1 && < 2.1 || >= 2.1.1 && < 2.2
+                     mtl >= 1.1 && < 2.1 || >= 2.1.1
