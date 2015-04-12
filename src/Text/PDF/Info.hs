@@ -29,10 +29,9 @@ import           Control.Monad.Error
 import           Data.Char (isSpace)
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           Data.Time
+import           Data.Time as Time
 import           Prelude
 import           System.Exit
-import           System.Locale
 import           System.Process.Text
 
 -- | A type representing the output from the pdfinfo command.
