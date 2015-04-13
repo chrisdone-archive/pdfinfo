@@ -29,7 +29,8 @@ import           Control.Monad.Error
 import           Data.Char (isSpace)
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           Data.Time as Time
+import           Data.Time (UTCTime,parseTime)
+import           Data.Time.Locale.Compat (defaultTimeLocale)
 import           Prelude
 import           System.Exit
 import           System.Process.Text
